@@ -78,9 +78,8 @@ router.delete('/:id', auth, async (req, res) => {
         if (post.user.toString() !== req.user.id) {
             return res.status(500).json({ msg: "User not authorised" })
         }
-
         await post.remove()
-        res.json({ msg: "post removed" })
+        res.json({ postId: req.params.id, msg: "post removed" })
     } catch (error) {
         console.log(error.message)
         res.status(500).send('server error')
@@ -102,7 +101,7 @@ router.put('/like/:id', auth, async (req, res) => {
         post.likes.unshift({ user: req.user.id })
         await post.save()
 
-        res.status(200).json(post.likes)
+        res.status(200).json(post)
 
 
     } catch (error) {
@@ -128,7 +127,7 @@ router.put('/unlike/:id', auth, async (req, res) => {
 
         await post.save(
 
-            res.status(200).json(post.likes)
+            res.status(200).json(post)
         )
 
     } catch (error) {

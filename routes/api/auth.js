@@ -51,12 +51,12 @@ router.post("/", [
                 id: user.id
             }
         }
-
+        user = await User.findOne({ email }).select('-password')
         jwt.sign(payload, config.get('jwtSecret'),
             { expiresIn: 360000 },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token })
+                res.json({ user: user, token: token })
             }
         )
 

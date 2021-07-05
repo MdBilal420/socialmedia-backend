@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const connectDB = require("./config/db");
 
 const app = express();
@@ -6,7 +7,9 @@ const app = express();
 //connect db
 connectDB()
 
-app.use(express.json({ extended: false }))
+app.use(express.json({ extended: true }))
+app.use(cors())
+app.use(express.urlencoded())
 
 
 app.get('/', (req, res) => {
@@ -20,4 +23,4 @@ app.use('/api/posts', require('./routes/api/posts'))
 
 const PORT = process.env.PORT || 5000
 
-app.listen(PORT, () => console.log("success"))
+app.listen(PORT, () => console.log(`success! running on ${PORT}`))

@@ -5,7 +5,7 @@ const router = express.Router()
 const auth = require("../../middleware/auth")
 const { check, validationResult } = require("express-validator")
 
-
+const Post = require("../../models/Post")
 
 // @route GET api/profile
 // @desc get current users profile
@@ -25,7 +25,6 @@ router.get("/me", auth, async (req, res) => {
 })
 
 
-
 // @route Post api/profile
 // @desc create or update profile
 
@@ -37,16 +36,13 @@ router.post("/", [
         return res.status(400).json({ errors: errors.array() })
     }
 
-    const { bio, birthdate, location, website, profilePic, coverPic } = req.body
-    console.log(req.user)
+    const { bio, birthdate, location, website } = req.body
     const profileFields = {}
     profileFields.user = req.user.id
     if (bio) profileFields.bio = bio
     if (birthdate) profileFields.birthdate = birthdate
     if (location) profileFields.location = location
     if (website) profileFields.website = website
-    if (profilePic) profileFields.profilePic = profilePic
-    if (coverPic) profileFields.coverPic = coverPic
 
     try {
         let profile = await Profile.findOne({ user: req.user.id })
@@ -88,13 +84,75 @@ router.get('/', async (req, res) => {
 router.get('/user/:user_id', async (req, res) => {
     try {
         const profile = await Profile.findOne({ user: req.params.user_id }).populate('user', ['username'])
+        const posts = await Post.find().sort({ date: -1 })
         if (!profile) {
             res.status(400).json({ msg: "profile not found" })
         }
-        res.json(profile)
+
+        var x = posts.filter((post) => post.user == req.params.user_id)
+        res.json({ profile: profile, posts: x })
+
     } catch (error) {
         console.log(error.message)
         res.status(500).send('Server Error')
+    }
+})
+
+
+// @route PUT api/profile/follow/:id
+// @desc follow a profile
+
+router.put('/follow/:id', auth, async (req, res) => {
+    try {
+        const profile = await Profile.findOne({ user: req.params.id })
+
+        const profile2 = await Profile.findOne({ user: req.user.id })
+
+        if (profile.followers.filter(profile => profile.user.toString() === req.user.id).length > 0) {
+            return res.status(400).json({ msg: "profile already followed" })
+        }
+
+        profile2.following.unshift({ user: req.params.id })
+        profile.followers.unshift({ user: req.user.id })
+        await profile.save()
+        await profile2.save()
+
+        res.status(200).json({ profile, profile2 })
+
+    } catch (error) {
+        console.error(error.message)
+        res.status(500).send('server error')
+    }
+})
+
+// @route PUT api/profile/unfollow/:id
+// @desc Unfollow a profile
+
+router.put('/unfollow/:id', auth, async (req, res) => {
+    try {
+        const profile = await Profile.findOne({ user: req.params.id })
+        const profile2 = await Profile.findOne({ user: req.user.id })
+
+        if (profile.followers.filter(follower => follower.user.toString() === req.user.id).length === 0) {
+            return res.status(400).json({ msg: "profile is not followed yet" })
+        }
+
+        const removeIndex1 = profile.followers.map(follower => follower.user.toString()).indexOf(req.user.id)
+        const removeIndex2 = profile2.following.map(follower => follower.user.toString()).indexOf(req.params.id)
+
+
+        profile.followers.splice(removeIndex1, 1)
+        profile2.following.splice(removeIndex2, 1)
+
+
+        await profile.save()
+        await profile2.save()
+
+        res.status(200).json({ profile, profile2 })
+
+    } catch (error) {
+        console.error(error.message)
+        re.status(500).send('server error')
     }
 })
 

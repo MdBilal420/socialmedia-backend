@@ -17,12 +17,22 @@ const ProfileSchema = new mongoose.Schema({
     website: {
         type: String
     },
-    profilePic: {
-        type: String
-    },
-    coverPic: {
-        type: String
-    }
+    followers: [
+        {
+            user: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'users'
+            }
+        }
+    ],
+    following: [
+        {
+            user: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'users'
+            }
+        }
+    ],
 })
 
 module.exports = mongoose.model('profile', ProfileSchema)
