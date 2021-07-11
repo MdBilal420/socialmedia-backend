@@ -2,9 +2,9 @@
   "name": "socialmedia-backend",
   "version": "1.0.0",
   "description": "linkkin-backend",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node server",
+    "start": "node index.js",
     "server": "nodemon server"
   },
   "author": "bilal",
