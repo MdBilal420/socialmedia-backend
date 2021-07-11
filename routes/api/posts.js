@@ -2,6 +2,7 @@ const express = require("express")
 const router = express.Router()
 const Post = require("../../models/Post")
 const Profile = require("../../models/Profile")
+const Notification = require("../../models/Notification")
 const User = require("../../models/User")
 const auth = require("../../middleware/auth")
 const { check, validationResult } = require("express-validator")
@@ -99,8 +100,22 @@ router.put('/like/:id', auth, async (req, res) => {
         }
 
         post.likes.unshift({ user: req.user.id })
+        console.log(post)
         await post.save()
-
+        if (post.user !== req.user.id) {
+            try {
+                const notification = {
+                    notificationType: "LIKE",
+                    time: new Date(),
+                    post: post._id,
+                    toUser: post.user,
+                    fromUser: req.user.id,
+                }
+                Notification.create(notification);
+            } catch (error) {
+                console.log(error);
+            }
+        }
         res.status(200).json(post)
 
 

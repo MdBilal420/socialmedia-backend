@@ -1,6 +1,7 @@
 const express = require("express")
 const Profile = require("../../models/Profile")
 const User = require("../../models/User")
+const Notification = require("../../models/Notification")
 const router = express.Router()
 const auth = require("../../middleware/auth")
 const { check, validationResult } = require("express-validator")
@@ -104,18 +105,30 @@ router.get('/user/:user_id', async (req, res) => {
 
 router.put('/follow/:id', auth, async (req, res) => {
     try {
-        const profile = await Profile.findOne({ user: req.params.id })
+        const profile = await Profile.findOne({ user: req.params.id }).populate('user', ['username'])
 
-        const profile2 = await Profile.findOne({ user: req.user.id })
+        const profile2 = await Profile.findOne({ user: req.user.id }).populate('user', ['username'])
 
         if (profile.followers.filter(profile => profile.user.toString() === req.user.id).length > 0) {
             return res.status(400).json({ msg: "profile already followed" })
         }
 
-        profile2.following.unshift({ user: req.params.id })
-        profile.followers.unshift({ user: req.user.id })
+        profile2.following.unshift({ user: profile.user._id, username: profile.user.username })
+        profile.followers.unshift({ user: profile2.user._id, username: profile2.user.username })
         await profile.save()
         await profile2.save()
+
+        try {
+            const notification = {
+                notificationType: "FOLLOW",
+                time: new Date(),
+                toUser: req.params.id,
+                fromUser: req.user.id,
+            }
+            Notification.create(notification);
+        } catch (error) {
+            console.log(error);
+        }
 
         res.status(200).json({ profile, profile2 })
 
