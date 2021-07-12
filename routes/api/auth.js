@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const config = require("config")
 const { check, validationResult } = require('express-validator');
+const Profile = require("../../models/Profile")
 
 const auth = require("../../middleware/auth")
 const User = require("../../models/User")
@@ -52,6 +53,23 @@ router.post("/", [
             }
         }
         user = await User.findOne({ email }).select('-password')
+
+        const profile = await Profile.findOne({ user: user._id })
+        if (!profile) {
+            try {
+                const newProfile = {
+                    user: user._id,
+                    bio: "New Bio",
+                    birthdate: "11-11-1990",
+                    location: "unknown",
+                    website: "https://"
+                }
+                Profile.create(newProfile);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
         jwt.sign(payload, config.get('jwtSecret'),
             { expiresIn: 360000 },
             (err, token) => {

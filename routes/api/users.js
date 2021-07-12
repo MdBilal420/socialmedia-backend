@@ -1,5 +1,6 @@
 const express = require("express")
 const router = express.Router()
+const Profile = require("../../models/Profile")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const config = require("config")
@@ -35,6 +36,7 @@ router.post("/", [
 
 
         await user.save()
+
 
         const payload = {
             user: {
