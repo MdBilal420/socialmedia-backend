@@ -59,10 +59,10 @@ router.post("/", [
             try {
                 const newProfile = {
                     user: user._id,
-                    bio: "New Bio",
+                    bio: "",
                     birthdate: "11-11-1990",
-                    location: "unknown",
-                    website: "https://"
+                    location: "",
+                    website: ""
                 }
                 Profile.create(newProfile);
             } catch (error) {
