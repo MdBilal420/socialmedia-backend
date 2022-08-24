@@ -11,7 +11,7 @@ app.use(express.json({ extended: true }))
 app.use(cors())
 app.use(express.urlencoded())
 
-
+//test connection
 app.get('/', (req, res) => {
     res.send("running")
 })
